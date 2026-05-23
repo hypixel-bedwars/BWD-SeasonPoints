@@ -4,6 +4,7 @@ import dev.bwd.seasonpoints.database.connection.DatabaseManager;
 import dev.bwd.seasonpoints.database.repositories.PlayerRepository;
 import dev.bwd.seasonpoints.database.repositories.VerificationRepository;
 import dev.bwd.seasonpoints.database.schema.SchemaManager;
+import dev.bwd.seasonpoints.integrations.discord.DiscordService;
 import dev.bwd.seasonpoints.integrations.discord.DiscordVerificationClient;
 import dev.bwd.seasonpoints.listeners.AdvancementListener;
 import dev.bwd.seasonpoints.listeners.DiscoveryListener;
@@ -19,6 +20,7 @@ public class SeasonPointsPlugin extends JavaPlugin {
 
   private DatabaseManager databaseManager;
   private MessageManager messageManager;
+  private DiscordService discordService;
 
   @Override
   public void onEnable() {
@@ -33,6 +35,15 @@ public class SeasonPointsPlugin extends JavaPlugin {
     schemaManager.initializeSchemas();
 
     PlayerRepository playerRepository = new PlayerRepository(databaseManager);
+
+    this.discordService = new DiscordService(this);
+
+    discordService.initializeDiscordService();
+
+    DiscordVerificationClient discordClient = new DiscordVerificationClient(
+      this,
+      discordService
+    );
 
     getServer()
       .getPluginManager()
@@ -53,8 +64,6 @@ public class SeasonPointsPlugin extends JavaPlugin {
     VerificationRepository verificationRepository = new VerificationRepository(
       databaseManager
     );
-
-    DiscordVerificationClient discordClient = new DiscordVerificationClient();
 
     VerificationService verificationService = new VerificationService(
       verificationRepository,
@@ -86,5 +95,9 @@ public class SeasonPointsPlugin extends JavaPlugin {
 
   public MessageManager getMessageManager() {
     return messageManager;
+  }
+
+  public DiscordService getDiscordService() {
+    return discordService;
   }
 }

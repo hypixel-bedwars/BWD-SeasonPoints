@@ -19,14 +19,14 @@ public class VerificationService {
     this.discordClient = discordClient;
   }
 
-  public boolean isVerified(UUID uuid) {
+  public boolean isVerified(UUID uuid, String username) {
     String storedDiscordId = verificationRepository.getDiscordId(uuid);
 
     if (storedDiscordId == null) {
       return false;
     }
 
-    String currentDiscordId = discordClient.getDiscordId(uuid);
+    String currentDiscordId = discordClient.getDiscordId(username);
 
     if (currentDiscordId == null) {
       return false;
@@ -35,8 +35,8 @@ public class VerificationService {
     return storedDiscordId.equals(currentDiscordId);
   }
 
-  public void syncVerification(UUID uuid) {
-    String discordId = discordClient.getDiscordId(uuid);
+  public void syncVerification(UUID uuid, String username) {
+    String discordId = discordClient.getDiscordId(username);
 
     if (discordId == null) {
       verificationRepository.unlinkDiscord(uuid);

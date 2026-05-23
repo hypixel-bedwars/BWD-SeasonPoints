@@ -1,32 +1,80 @@
 package dev.bwd.seasonpoints.integrations.discord;
 
+import dev.bwd.seasonpoints.SeasonPointsPlugin;
+import java.util.List;
 import java.util.UUID;
+import net.dv8tion.jda.api.entities.Guild;
+import net.dv8tion.jda.api.entities.Member;
+import net.dv8tion.jda.api.entities.Role;
 
 public class DiscordVerificationClient {
 
-  public boolean isVerified(UUID uuid) {
-    /*
-            Dummy implementation for now.
+  private final SeasonPointsPlugin plugin;
 
-            Later this will:
-            - call your Discord bot API
-            - query another database
-            - verify guild membership
-            - validate linked account
-        */
+  private final DiscordService discordService;
 
-    return true;
+  public DiscordVerificationClient(
+    SeasonPointsPlugin plugin,
+    DiscordService discordService
+  ) {
+    this.plugin = plugin;
+
+    this.discordService = discordService;
   }
 
-  public String getDiscordId(UUID uuid) {
-    /*
-            Dummy implementation.
+  public boolean isVerified(UUID uuid, String minecraftUsername) {
+    String guildId = plugin.getConfig().getString("discord.guild-id");
 
-            Later:
-            - fetch linked Discord ID
-            - return null if not linked
-        */
+    String verifiedRoleId = plugin
+      .getConfig()
+      .getString("discord.verified-role-id");
 
-    return "795526316832849932";
+    if (guildId == null || verifiedRoleId == null) {
+      return false;
+    }
+
+    Guild guild = discordService.getJda().getGuildById(guildId);
+
+    if (guild == null) {
+      return false;
+    }
+
+    List<Member> members = guild.getMembersByNickname(minecraftUsername, true);
+
+    for (Member member : members) {
+      Role verifiedRole = guild.getRoleById(verifiedRoleId);
+
+      if (verifiedRole == null) {
+        return false;
+      }
+
+      if (member.getRoles().contains(verifiedRole)) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+  public String getDiscordId(String minecraftUsername) {
+    String guildId = plugin.getConfig().getString("discord.guild-id");
+
+    if (guildId == null) {
+      return null;
+    }
+
+    Guild guild = discordService.getJda().getGuildById(guildId);
+
+    if (guild == null) {
+      return null;
+    }
+
+    List<Member> members = guild.getMembersByNickname(minecraftUsername, true);
+
+    if (members.isEmpty()) {
+      return null;
+    }
+
+    return members.getFirst().getId();
   }
 }

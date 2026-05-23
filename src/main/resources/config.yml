@@ -5,5 +5,10 @@ database:
   username: postgres
   password: postgres
 
+discord:
+  bot-token: "PUT_TOKEN_HERE"
+  guild-id: 123456789012345678
+  verified-role-id: 123456789012345678
+
 season:
   current-season: 1

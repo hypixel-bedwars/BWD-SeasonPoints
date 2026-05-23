@@ -25,7 +25,7 @@ public class VerificationListener implements Listener {
 
   @EventHandler
   public void onPreLogin(AsyncPlayerPreLoginEvent event) {
-    boolean verified = verificationService.isVerified(event.getUniqueId());
+    boolean verified = verificationService.isVerified(event.getUniqueId(), event.getName());
 
     List<String> lines = plugin
       .getMessageManager()

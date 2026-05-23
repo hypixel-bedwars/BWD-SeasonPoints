@@ -1,7 +1,6 @@
 package dev.bwd.seasonpoints.integrations.discord;
 
 import dev.bwd.seasonpoints.SeasonPointsPlugin;
-import java.util.List;
 import java.util.UUID;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
@@ -12,6 +11,17 @@ public class DiscordVerificationClient {
   private final SeasonPointsPlugin plugin;
 
   private final DiscordService discordService;
+
+  private String normalizeNickname(String nickname) {
+    if (nickname == null) {
+      return "";
+    }
+
+    return nickname
+      .replaceAll("\\[[^\\]]+\\]\\s*", "")
+      .trim()
+      .toLowerCase();
+  }
 
   public DiscordVerificationClient(
     SeasonPointsPlugin plugin,
@@ -39,17 +49,21 @@ public class DiscordVerificationClient {
       return false;
     }
 
-    List<Member> members = guild.getMembersByNickname(minecraftUsername, true);
+    Role verifiedRole = guild.getRoleById(verifiedRoleId);
 
-    for (Member member : members) {
-      Role verifiedRole = guild.getRoleById(verifiedRoleId);
+    if (verifiedRole == null) {
+      return false;
+    }
 
-      if (verifiedRole == null) {
-        return false;
-      }
+    for (Member member : guild.getMembers()) {
+      String nickname = member.getNickname();
 
-      if (member.getRoles().contains(verifiedRole)) {
-        return true;
+      String normalizedNickname = normalizeNickname(nickname);
+
+      if (normalizedNickname.equalsIgnoreCase(minecraftUsername)) {
+        if (member.getRoles().contains(verifiedRole)) {
+          return true;
+        }
       }
     }
 
@@ -69,12 +83,16 @@ public class DiscordVerificationClient {
       return null;
     }
 
-    List<Member> members = guild.getMembersByNickname(minecraftUsername, true);
+    for (Member member : guild.getMembers()) {
+      String nickname = member.getNickname();
 
-    if (members.isEmpty()) {
-      return null;
+      String normalizedNickname = normalizeNickname(nickname);
+
+      if (normalizedNickname.equalsIgnoreCase(minecraftUsername)) {
+        return member.getId();
+      }
     }
 
-    return members.getFirst().getId();
+    return null;
   }
 }

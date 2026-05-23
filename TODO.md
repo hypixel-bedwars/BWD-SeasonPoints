@@ -24,5 +24,3 @@
 * Misc world interaction
 
   * idk what to add here, i need your suggestions for this
-
-I have made this list just to keep a track of all the stuff i need to implement, if you feel like we can add something let me know and i did not add points to any of the stuff here, if you wanna help me on that feel free :)

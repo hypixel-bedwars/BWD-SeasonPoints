@@ -4,6 +4,7 @@ CREATE TABLE IF NOT EXISTS advancement_rewards (
     advancement_key VARCHAR(200) NOT NULL,
     completed_at TIMESTAMP NOT NULL DEFAULT NOW(),
     PRIMARY KEY (season_id, player_uuid, advancement_key),
+    PRIMARY KEY (season_id, player_uuid),
 
     FOREIGN KEY (player_uuid)
         REFERENCES players(uuid)

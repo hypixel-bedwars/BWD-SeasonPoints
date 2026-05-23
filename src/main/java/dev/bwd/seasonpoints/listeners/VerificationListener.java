@@ -25,21 +25,28 @@ public class VerificationListener implements Listener {
 
   @EventHandler
   public void onPreLogin(AsyncPlayerPreLoginEvent event) {
-    boolean verified = verificationService.isVerified(event.getUniqueId(), event.getName());
+    plugin
+      .getLogger()
+      .info("VerificationListener fired for: " + event.getName());
 
-    List<String> lines = plugin
-      .getMessageManager()
-      .getMessagesConfig()
-      .getStringList("verification.not_verified");
+    boolean verified = verificationService.isVerified(
+      event.getUniqueId(),
+      event.getName()
+    );
+
+    // Log the actual result of the check
+    plugin
+      .getLogger()
+      .info("Verification result for " + event.getName() + ": " + verified);
 
     if (!verified) {
+      List<String> lines = plugin
+        .getMessageManager()
+        .getMessagesConfig()
+        .getStringList("verification.not_verified");
       event.disallow(
         AsyncPlayerPreLoginEvent.Result.KICK_OTHER,
-        MiniMessage
-    .miniMessage()
-    .deserialize(
-        String.join("\n", lines)
-    )
+        MiniMessage.miniMessage().deserialize(String.join("\n", lines))
       );
     }
   }

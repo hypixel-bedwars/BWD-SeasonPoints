@@ -21,15 +21,15 @@ public class VerificationService {
 
   public boolean isVerified(UUID uuid, String username) {
     String storedDiscordId = verificationRepository.getDiscordId(uuid);
-
-    if (storedDiscordId == null) {
-      return false;
-    }
-
     String currentDiscordId = discordClient.getDiscordId(username);
 
     if (currentDiscordId == null) {
       return false;
+    }
+
+    if (storedDiscordId == null) {
+      verificationRepository.linkDiscord(uuid, currentDiscordId);
+      return true;
     }
 
     return storedDiscordId.equals(currentDiscordId);

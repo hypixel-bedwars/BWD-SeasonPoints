@@ -3,6 +3,7 @@ package dev.bwd.seasonpoints.listeners;
 import dev.bwd.seasonpoints.SeasonPointsPlugin;
 import dev.bwd.seasonpoints.services.VerificationService;
 import java.util.List;
+import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -44,10 +45,13 @@ public class VerificationListener implements Listener {
         .getMessageManager()
         .getMessagesConfig()
         .getStringList("verification.not_verified");
-      event.disallow(
-        AsyncPlayerPreLoginEvent.Result.KICK_OTHER,
-        MiniMessage.miniMessage().deserialize(String.join("\n", lines))
-      );
+
+      Component kickMessage = lines
+        .stream()
+        .map(line -> MiniMessage.miniMessage().deserialize(line))
+        .collect(Component.toComponent(Component.newline()));
+
+      event.disallow(AsyncPlayerPreLoginEvent.Result.KICK_OTHER, kickMessage);
     }
   }
 }

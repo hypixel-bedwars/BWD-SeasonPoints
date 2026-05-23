@@ -1,10 +1,9 @@
 verification:
   not_verified:
+    - "<red><b>VERIFICATION REQUIRED</b></red>"
     - ""
-    - "<red>You are not verified.</red>"
+    - "<gray>You are not verified to play on the network.</gray>"
+    - "<gray>Please join our Discord to gain access:</gray>"
+    - "<click:open_url:'https://discord.gg/bedwars'><gold><u><b>discord.gg/bedwars</b></u></gold></click>"
     - ""
-    - "<gray>Please join the Discord server</gray>"
-    - "<gray>and complete verification.</gray>"
-    - ""
-    - "<yellow>Rejoin after verifying.</yellow>"
-    - ""
+    - "<yellow>Rejoin the server once you are verified.</yellow>"

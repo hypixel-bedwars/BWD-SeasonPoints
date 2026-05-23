@@ -1,0 +1,10 @@
+verification:
+  not_verified:
+    - ""
+    - "<red>You are not verified.</red>"
+    - ""
+    - "<gray>Please join the Discord server</gray>"
+    - "<gray>and complete verification.</gray>"
+    - ""
+    - "<yellow>Rejoin after verifying.</yellow>"
+    - ""

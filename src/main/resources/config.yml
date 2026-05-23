@@ -3,7 +3,7 @@ database:
   port: 5432
   database: seasonpoints
   username: postgres
-  password: password
+  password: postgres
 
 season:
   current-season: 1

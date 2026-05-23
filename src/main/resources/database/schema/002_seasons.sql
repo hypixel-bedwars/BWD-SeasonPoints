@@ -1,0 +1,6 @@
+CREATE TABLE IF NOT EXISTS seasons (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(50) NOT NULL,
+    started_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    ended_at TIMESTAMP
+);

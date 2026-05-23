@@ -1,0 +1,8 @@
+CREATE TABLE IF NOT EXISTS players (
+    uuid UUID PRIMARY KEY,
+    username VARCHAR(16) NOT NULL,
+    discord_id VARCHAR(20) UNIQUE,
+    total_points INTEGER NOT NULL DEFAULT 0,
+    first_joined TIMESTAMP NOT NULL DEFAULT NOW(),
+    last_seen TIMESTAMP NOT NULL DEFAULT NOW()
+);

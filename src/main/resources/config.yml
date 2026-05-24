@@ -21,4 +21,7 @@ points:
      Rare: 100
   discoveries:
     common-biome: 10
-    rare-biome: 50    
+    rare-biome: 50
+  pvp:
+    unique-kill: 10
+    unique-mace-kill: 50

@@ -5,6 +5,7 @@ import dev.bwd.seasonpoints.database.repositories.AdvancementRepository;
 import dev.bwd.seasonpoints.database.repositories.DiscoveryRepository;
 import dev.bwd.seasonpoints.database.repositories.PlayerRepository;
 import dev.bwd.seasonpoints.database.repositories.PointsRepository;
+import dev.bwd.seasonpoints.database.repositories.PvpRepository;
 import dev.bwd.seasonpoints.database.repositories.SeasonRepository;
 import dev.bwd.seasonpoints.database.repositories.VerificationRepository;
 import dev.bwd.seasonpoints.database.schema.SchemaManager;
@@ -21,6 +22,7 @@ import dev.bwd.seasonpoints.placeholders.SeasonPointsExpansion;
 import dev.bwd.seasonpoints.services.AdvancementService;
 import dev.bwd.seasonpoints.services.DiscoveryService;
 import dev.bwd.seasonpoints.services.PointsService;
+import dev.bwd.seasonpoints.services.PvpService;
 import dev.bwd.seasonpoints.services.SeasonService;
 import dev.bwd.seasonpoints.services.VerificationService;
 import dev.bwd.seasonpoints.utils.MessageManager;
@@ -62,6 +64,7 @@ public class SeasonPointsPlugin extends JavaPlugin {
     DiscoveryRepository discoveryRepository = new DiscoveryRepository(
       databaseManager
     );
+    PvpRepository pvpRepository = new PvpRepository(databaseManager);
 
     // =========================================
     // 3. SERVICES (Business Logic)
@@ -93,6 +96,12 @@ public class SeasonPointsPlugin extends JavaPlugin {
       discoveryRepository,
       pointsService
     );
+    PvpService pvpService = new PvpService(
+      this,
+      pvpRepository,
+      pointsService,
+      seasonService
+    );
 
     // =========================================
     // 4. LISTENERS (Events)
@@ -111,7 +120,8 @@ public class SeasonPointsPlugin extends JavaPlugin {
       playerRepository,
       verificationService,
       pointsService,
-      discoveryService
+      discoveryService,
+      pvpService
     );
 
     getLogger().info("BWD-SeasonPoints enabled!");
@@ -133,7 +143,8 @@ public class SeasonPointsPlugin extends JavaPlugin {
     PlayerRepository playerRepository,
     VerificationService verificationService,
     PointsService pointsService,
-    DiscoveryService discoveryService
+    DiscoveryService discoveryService,
+    PvpService pvpService
   ) {
     PluginManager pm = getServer().getPluginManager();
 
@@ -152,10 +163,14 @@ public class SeasonPointsPlugin extends JavaPlugin {
       this
     );
     pm.registerEvents(new SurvivalListener(), this);
-    pm.registerEvents(new PvPListener(), this);
+    pm.registerEvents(new PvPListener(pvpService), this);
     pm.registerEvents(new DiscoveryListener(discoveryService), this);
     pm.registerEvents(
-      new PlayerDisconnectListener(playerRepository, pointsService, discoveryService),
+      new PlayerDisconnectListener(
+        playerRepository,
+        pointsService,
+        discoveryService
+      ),
       this
     );
   }

@@ -44,4 +44,8 @@ public class SeasonService {
         .info("Validated database entry for Season " + currentSeasonId);
     }
   }
+
+  public int getCurrentSeasonId() {
+    return plugin.getConfig().getInt("season.current-season", 1);
+  }
 }

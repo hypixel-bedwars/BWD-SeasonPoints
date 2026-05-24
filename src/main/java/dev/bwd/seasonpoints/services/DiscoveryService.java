@@ -3,6 +3,7 @@ package dev.bwd.seasonpoints.services;
 import dev.bwd.seasonpoints.SeasonPointsPlugin;
 import dev.bwd.seasonpoints.database.repositories.DiscoveryRepository;
 import dev.bwd.seasonpoints.models.DiscoveredBiome;
+import dev.bwd.seasonpoints.models.DiscoveredStructure;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
@@ -39,63 +40,82 @@ public class DiscoveryService {
     this.pointsService = pointsService;
   }
 
-  /**
-   * Called when a player joins the server to load their discoveries into memory.
-   */
   public void loadPlayerCache(int seasonId, UUID playerUuid) {
     Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
-      Set<String> discoveredBiomes = ConcurrentHashMap.newKeySet();
+      Set<String> discovered = ConcurrentHashMap.newKeySet();
 
+      // Load Biomes
       for (DiscoveredBiome db : discoveryRepository.getBiomeDiscoveries(
         seasonId,
         playerUuid
       )) {
-        discoveredBiomes.add(db.getBiomeKey());
+        discovered.add(db.getBiomeKey());
       }
 
-      playerDiscoveriesCache.put(playerUuid, discoveredBiomes);
+      // Load Structures
+      for (DiscoveredStructure ds : discoveryRepository.getStructureDiscoveries(
+        seasonId,
+        playerUuid
+      )) {
+        discovered.add(ds.getStructureKey());
+      }
+
+      playerDiscoveriesCache.put(playerUuid, discovered);
       plugin
         .getLogger()
         .info(
           "[DiscoveryService] Loaded " +
-            discoveredBiomes.size() +
-            " biomes for " +
+            discovered.size() +
+            " discoveries for " +
             playerUuid
         );
     });
   }
 
-  /**
-   * Called when a player quits to free up memory.
-   */
   public void unloadPlayerCache(UUID playerUuid) {
     playerDiscoveriesCache.remove(playerUuid);
   }
 
-  /**
-   * Checks if a biome is newly discovered, awards points, and saves it.
-   */
   public void handleBiomeDiscovery(Player player, Biome biome) {
     UUID uuid = player.getUniqueId();
     String biomeKey = biome.name();
-    int seasonId = plugin.getConfig().getInt("season.current-season");
 
     Set<String> discovered = playerDiscoveriesCache.get(uuid);
-    if (discovered == null) return;
-
-    if (discovered.contains(biomeKey)) {
+    if (discovered == null || !discovered.add(biomeKey)) {
       return;
     }
-
-    discovered.add(biomeKey);
 
     boolean isRare = RARE_BIOMES.contains(biomeKey);
     int pointsToAward = isRare
       ? plugin.getConfig().getInt("points.discoveries.rare-biome", 50)
       : plugin.getConfig().getInt("points.discoveries.common-biome", 10);
 
+    int seasonId = plugin.getConfig().getInt("season.current-season");
     Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
       discoveryRepository.createBiomeDiscovery(seasonId, uuid, biomeKey);
+      pointsService.awardPointsAsync(seasonId, uuid, pointsToAward);
+    });
+  }
+
+  public void handleStructureDiscovery(Player player, String structureKey) {
+    UUID uuid = player.getUniqueId();
+
+    Set<String> discovered = playerDiscoveriesCache.get(uuid);
+    if (discovered == null || !discovered.add(structureKey)) {
+      return;
+    }
+
+    int pointsToAward = plugin
+      .getConfig()
+      .getInt("points.discoveries.structure", 25);
+
+    int seasonId = plugin.getConfig().getInt("season.current-season");
+    Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
+      discoveryRepository.createStructureDiscovery(
+        seasonId,
+        uuid,
+        structureKey
+      );
       pointsService.awardPointsAsync(seasonId, uuid, pointsToAward);
     });
   }

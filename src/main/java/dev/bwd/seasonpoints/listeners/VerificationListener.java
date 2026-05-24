@@ -12,7 +12,6 @@ import org.bukkit.event.player.AsyncPlayerPreLoginEvent;
 public class VerificationListener implements Listener {
 
   private final SeasonPointsPlugin plugin;
-
   private final VerificationService verificationService;
 
   public VerificationListener(
@@ -35,7 +34,6 @@ public class VerificationListener implements Listener {
       event.getName()
     );
 
-    // Log the actual result of the check
     plugin
       .getLogger()
       .info("Verification result for " + event.getName() + ": " + verified);

@@ -1,8 +1,6 @@
 package dev.bwd.seasonpoints.listeners;
 
 import dev.bwd.seasonpoints.services.DiscoveryService;
-import java.util.HashSet;
-import java.util.Set;
 import net.kyori.adventure.key.Key;
 import org.bukkit.Location;
 import org.bukkit.World;
@@ -24,9 +22,7 @@ public class DiscoveryListener implements Listener {
 
   @EventHandler
   public void onMove(PlayerMoveEvent event) {
-    if (event.getTo() == null) {
-      return;
-    }
+    if (event.getTo() == null) return;
 
     if (
       event.getFrom().getBlockX() == event.getTo().getBlockX() &&
@@ -46,12 +42,9 @@ public class DiscoveryListener implements Listener {
     Biome fromBiome = event.getFrom().getBlock().getBiome();
     Biome toBiome = event.getTo().getBlock().getBiome();
 
-    if (fromBiome == toBiome) {
-      return;
+    if (fromBiome != toBiome) {
+      discoveryService.handleBiomeDiscovery(player, toBiome);
     }
-
-    // Pass the logic off to our service
-    discoveryService.handleBiomeDiscovery(player, toBiome);
   }
 
   private void checkStructureDiscovery(Player player) {
@@ -65,12 +58,6 @@ public class DiscoveryListener implements Listener {
     int chunkX = playerX >> 4;
     int chunkZ = playerZ >> 4;
 
-    // TODO: Save to the cache so that the player doesn't get duplicate messages for the same structure.
-    // Save to the db to make sure it is new structure that he has discovered
-    Set<Key> discoveredStructures = new HashSet<>();
-
-    // A chunk is 16x16. Checking a 3x3 chunk grid centered on the player covers
-    // the current chunk and its neighbors, safely covering your 20-block radius.
     for (int cx = chunkX - 1; cx <= chunkX + 1; cx++) {
       for (int cz = chunkZ - 1; cz <= chunkZ + 1; cz++) {
         for (GeneratedStructure generated : world.getStructures(cx, cz)) {
@@ -80,35 +67,25 @@ public class DiscoveryListener implements Listener {
             0,
             Math.max(box.getMinX() - playerX, playerX - box.getMaxX())
           );
-          double distanceY = Math.max(
-            0,
-            Math.max(box.getMinY() - playerY, playerY - box.getMaxY())
-          );
           double distanceZ = Math.max(
             0,
             Math.max(box.getMinZ() - playerZ, playerZ - box.getMaxZ())
           );
-
-          double distance = Math.sqrt(
-            distanceX * distanceX +
-              distanceY * distanceY +
-              distanceZ * distanceZ
+          double distanceHorizontal = Math.sqrt(
+            distanceX * distanceX + distanceZ * distanceZ
           );
 
-          if (distance <= 20) {
-            Key key = generated.getStructure().key();
+          double distanceY = Math.max(
+            0,
+            Math.max(box.getMinY() - playerY, playerY - box.getMaxY())
+          );
 
-            if (discoveredStructures.add(key)) {
-              player.sendMessage("Discovered structure: " + key.asString());
-            }
+          if (distanceHorizontal <= 20 && distanceY <= 5) {
+            Key key = generated.getStructure().key();
+            discoveryService.handleStructureDiscovery(player, key.asString());
           }
         }
       }
     }
-  }
-
-  @Override
-  public String toString() {
-    return "DiscoveryListener []";
   }
 }

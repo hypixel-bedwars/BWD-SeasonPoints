@@ -2,6 +2,8 @@ package dev.bwd.seasonpoints.database.repositories;
 
 import dev.bwd.seasonpoints.database.connection.DatabaseManager;
 import dev.bwd.seasonpoints.models.DiscoveredBiome;
+import dev.bwd.seasonpoints.models.DiscoveredStructure;
+
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -116,6 +118,72 @@ public class DiscoveryRepository {
 
             resultSet.getString("biome_key"),
 
+            resultSet.getTimestamp("discovered_at").toLocalDateTime()
+          )
+        );
+      }
+    } catch (SQLException exception) {
+      exception.printStackTrace();
+    }
+
+    return discoveries;
+  }
+
+  public void createStructureDiscovery(
+    int seasonId,
+    UUID playerUuid,
+    String structureKey
+  ) {
+    String sql = """
+          INSERT INTO structure_discoveries (
+              season_id,
+              player_uuid,
+              structure_key
+          )
+          VALUES (?, ?, ?)
+          ON CONFLICT DO NOTHING
+      """;
+
+    try (
+      Connection connection = databaseManager.getConnection();
+      PreparedStatement statement = connection.prepareStatement(sql)
+    ) {
+      statement.setInt(1, seasonId);
+      statement.setObject(2, playerUuid);
+      statement.setString(3, structureKey);
+      statement.executeUpdate();
+    } catch (SQLException exception) {
+      exception.printStackTrace();
+    }
+  }
+
+  public List<DiscoveredStructure> getStructureDiscoveries(
+    int seasonId,
+    UUID playerUuid
+  ) {
+    List<DiscoveredStructure> discoveries = new ArrayList<>();
+
+    String sql = """
+          SELECT season_id, player_uuid, structure_key, discovered_at
+          FROM structure_discoveries
+          WHERE season_id = ?
+          AND player_uuid = ?
+      """;
+
+    try (
+      Connection connection = databaseManager.getConnection();
+      PreparedStatement statement = connection.prepareStatement(sql)
+    ) {
+      statement.setInt(1, seasonId);
+      statement.setObject(2, playerUuid);
+      ResultSet resultSet = statement.executeQuery();
+
+      while (resultSet.next()) {
+        discoveries.add(
+          new DiscoveredStructure(
+            resultSet.getInt("season_id"),
+            resultSet.getObject("player_uuid", UUID.class),
+            resultSet.getString("structure_key"),
             resultSet.getTimestamp("discovered_at").toLocalDateTime()
           )
         );

@@ -2,7 +2,10 @@ package dev.bwd.seasonpoints.integrations.discord;
 
 import dev.bwd.seasonpoints.SeasonPointsPlugin;
 import dev.bwd.seasonpoints.integrations.discord.commands.DiscordCommand;
+import dev.bwd.seasonpoints.integrations.discord.commands.HelpCommand;
+import dev.bwd.seasonpoints.integrations.discord.commands.LeaderboardCommand;
 import dev.bwd.seasonpoints.integrations.discord.commands.ProfileCommand;
+import dev.bwd.seasonpoints.integrations.discord.commands.SeasonCommand;
 import dev.bwd.seasonpoints.integrations.discord.events.SlashCommandListener;
 import java.util.HashMap;
 import java.util.Map;
@@ -57,8 +60,9 @@ public class DiscordService {
 
   private void registerCommands() {
     register(new ProfileCommand(plugin));
-    // register(new HelpCommand(plugin));
-    // register(new TopPointsCommand(plugin));
+    register(new LeaderboardCommand(plugin));
+    register(new SeasonCommand(plugin));
+    register(new HelpCommand());
   }
 
   private void register(DiscordCommand command) {

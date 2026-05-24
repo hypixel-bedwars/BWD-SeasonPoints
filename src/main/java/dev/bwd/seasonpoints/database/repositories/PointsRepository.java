@@ -1,9 +1,13 @@
 package dev.bwd.seasonpoints.database.repositories;
 
 import dev.bwd.seasonpoints.database.connection.DatabaseManager;
+import dev.bwd.seasonpoints.models.LeaderboardEntry;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 import org.bukkit.Bukkit;
 
@@ -96,6 +100,96 @@ public class PointsRepository {
     }
 
     return 0;
+  }
+
+  public List<LeaderboardEntry> getTopForSeason(int seasonId, int limit) {
+    String sql = """
+          SELECT sp.player_uuid, p.username, sp.points
+          FROM season_points sp
+          INNER JOIN players p ON p.uuid = sp.player_uuid
+          WHERE sp.season_id = ?
+          ORDER BY sp.points DESC, p.username ASC
+          LIMIT ?
+      """;
+
+    List<LeaderboardEntry> entries = new ArrayList<>();
+
+    try (
+      Connection connection = databaseManager.getConnection();
+      PreparedStatement statement = connection.prepareStatement(sql)
+    ) {
+      statement.setInt(1, seasonId);
+      statement.setInt(2, limit);
+
+      try (ResultSet resultSet = statement.executeQuery()) {
+        while (resultSet.next()) {
+          entries.add(
+            new LeaderboardEntry(
+              resultSet.getObject("player_uuid", UUID.class),
+              resultSet.getString("username"),
+              resultSet.getInt("points")
+            )
+          );
+        }
+      }
+    } catch (SQLException exception) {
+      Bukkit.getLogger().severe(
+        "[SeasonPoints] Failed to fetch leaderboard for season " +
+          seasonId +
+          ": " +
+          exception.getMessage()
+      );
+    }
+
+    return entries;
+  }
+
+  public int getActivePlayerCount(int seasonId) {
+    String sql =
+      "SELECT COUNT(*) FROM season_points WHERE season_id = ? AND points > 0;";
+
+    try (
+      Connection connection = databaseManager.getConnection();
+      PreparedStatement statement = connection.prepareStatement(sql)
+    ) {
+      statement.setInt(1, seasonId);
+
+      try (ResultSet resultSet = statement.executeQuery()) {
+        if (resultSet.next()) {
+          return resultSet.getInt(1);
+        }
+      }
+    } catch (SQLException exception) {
+      Bukkit.getLogger().severe(
+        "[SeasonPoints] Failed to count active players: " + exception.getMessage()
+      );
+    }
+
+    return 0;
+  }
+
+  public long getTotalPointsAwarded(int seasonId) {
+    String sql =
+      "SELECT COALESCE(SUM(points), 0) FROM season_points WHERE season_id = ?;";
+
+    try (
+      Connection connection = databaseManager.getConnection();
+      PreparedStatement statement = connection.prepareStatement(sql)
+    ) {
+      statement.setInt(1, seasonId);
+
+      try (ResultSet resultSet = statement.executeQuery()) {
+        if (resultSet.next()) {
+          return resultSet.getLong(1);
+        }
+      }
+    } catch (SQLException exception) {
+      Bukkit.getLogger().severe(
+        "[SeasonPoints] Failed to sum points: " + exception.getMessage()
+      );
+    }
+
+    return 0L;
   }
 
   public int getLifetimePoints(UUID playerUuid) {

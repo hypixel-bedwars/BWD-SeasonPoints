@@ -141,4 +141,36 @@ public class PlayerRepository {
 
     return null;
   }
+
+  public SeasonPlayer getPlayerByDiscordId(String discordId) {
+    String sql = """
+          SELECT *
+          FROM players
+          WHERE discord_id = ?
+      """;
+  
+    try (
+      Connection connection = databaseManager.getConnection();
+      PreparedStatement statement = connection.prepareStatement(sql)
+    ) {
+      statement.setString(1, discordId);
+  
+      ResultSet resultSet = statement.executeQuery();
+  
+      if (resultSet.next()) {
+        return new SeasonPlayer(
+          resultSet.getObject("uuid", UUID.class),
+          resultSet.getString("username"),
+          resultSet.getString("discord_id"),
+          resultSet.getInt("total_points"),
+          resultSet.getTimestamp("first_joined").toLocalDateTime(),
+          resultSet.getTimestamp("last_seen").toLocalDateTime()
+        );
+      }
+    } catch (SQLException exception) {
+      exception.printStackTrace();
+    }
+  
+    return null;
+  }
 }

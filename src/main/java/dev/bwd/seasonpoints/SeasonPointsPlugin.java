@@ -36,6 +36,22 @@ public class SeasonPointsPlugin extends JavaPlugin {
   private DatabaseManager databaseManager;
   private MessageManager messageManager;
   private DiscordService discordService;
+  private SeasonRepository seasonRepository;
+  private PointsRepository pointsRepository;
+  private PlayerRepository playerRepository;
+  private AdvancementRepository advancementRepository;
+  private VerificationRepository verificationRepository;
+  private DiscoveryRepository discoveryRepository;
+  private PvpRepository pvpRepository;
+  private SurvivalRepository survivalRepository;
+
+  private SeasonService seasonService;
+  private PointsService pointsService;
+  private AdvancementService advancementService;
+  private VerificationService verificationService;
+  private DiscoveryService discoveryService;
+  private PvpService pvpService;
+  private SurvivalService survivalService;
 
   @Override
   public void onEnable() {
@@ -54,28 +70,23 @@ public class SeasonPointsPlugin extends JavaPlugin {
     // =========================================
     // 2. REPOSITORIES (Data Access)
     // =========================================
-    SeasonRepository seasonRepository = new SeasonRepository(databaseManager);
-    PointsRepository pointsRepository = new PointsRepository(databaseManager);
-    PlayerRepository playerRepository = new PlayerRepository(databaseManager);
-    AdvancementRepository advancementRepository = new AdvancementRepository(
-      databaseManager
-    );
-    VerificationRepository verificationRepository = new VerificationRepository(
-      databaseManager
-    );
-    DiscoveryRepository discoveryRepository = new DiscoveryRepository(
-      databaseManager
-    );
-    PvpRepository pvpRepository = new PvpRepository(databaseManager);
-    SurvivalRepository survivalRepository = new SurvivalRepository(databaseManager);
+    this.seasonRepository = new SeasonRepository(databaseManager);
+    this.pointsRepository = new PointsRepository(databaseManager);
+    this.playerRepository = new PlayerRepository(databaseManager);
+    this.advancementRepository = new AdvancementRepository(databaseManager);
+    this.verificationRepository = new VerificationRepository(databaseManager);
+    this.discoveryRepository = new DiscoveryRepository(databaseManager);
+    this.pvpRepository = new PvpRepository(databaseManager);
+    this.survivalRepository = new SurvivalRepository(databaseManager);
 
     // =========================================
     // 3. SERVICES (Business Logic)
+    // FIXED: Assigned to class fields instead of local variables
     // =========================================
-    SeasonService seasonService = new SeasonService(this, seasonRepository);
-    seasonService.ensureCurrentSeasonExists();
+    this.seasonService = new SeasonService(this, seasonRepository);
+    this.seasonService.ensureCurrentSeasonExists();
 
-    PointsService pointsService = new PointsService(this, pointsRepository);
+    this.pointsService = new PointsService(this, pointsRepository);
 
     this.discordService = new DiscordService(this);
     this.discordService.initializeDiscordService();
@@ -84,28 +95,28 @@ public class SeasonPointsPlugin extends JavaPlugin {
       discordService
     );
 
-    AdvancementService advancementService = new AdvancementService(
+    this.advancementService = new AdvancementService(
       this,
       advancementRepository,
       pointsService
     );
-    VerificationService verificationService = new VerificationService(
+    this.verificationService = new VerificationService(
       verificationRepository,
       discordClient
     );
 
-    DiscoveryService discoveryService = new DiscoveryService(
+    this.discoveryService = new DiscoveryService(
       this,
       discoveryRepository,
       pointsService
     );
-    PvpService pvpService = new PvpService(
+    this.pvpService = new PvpService(
       this,
       pvpRepository,
       pointsService,
       seasonService
     );
-    SurvivalService survivalService = new SurvivalService(
+    this.survivalService = new SurvivalService(
       this,
       survivalRepository,
       pointsService,
@@ -113,11 +124,10 @@ public class SeasonPointsPlugin extends JavaPlugin {
     );
 
     // =========================================
-    // 4. LISTENERS (Events)
+    // 4. PLACEHOLDERS / INTEGRATIONS
     // =========================================
     if (getServer().getPluginManager().getPlugin("PlaceholderAPI") != null) {
       new SeasonPointsExpansion(this, pointsService).register();
-
       getLogger().info("Registered PlaceholderAPI expansion!");
     }
 
@@ -198,5 +208,65 @@ public class SeasonPointsPlugin extends JavaPlugin {
 
   public DiscordService getDiscordService() {
     return discordService;
+  }
+
+  public SeasonRepository getSeasonRepository() {
+    return seasonRepository;
+  }
+
+  public PointsRepository getPointsRepository() {
+    return pointsRepository;
+  }
+
+  public PlayerRepository getPlayerRepository() {
+    return playerRepository;
+  }
+
+  public AdvancementRepository getAdvancementRepository() {
+    return advancementRepository;
+  }
+
+  public VerificationRepository getVerificationRepository() {
+    return verificationRepository;
+  }
+
+  public DiscoveryRepository getDiscoveryRepository() {
+    return discoveryRepository;
+  }
+
+  public PvpRepository getPvpRepository() {
+    return pvpRepository;
+  }
+
+  public SurvivalRepository getSurvivalRepository() {
+    return survivalRepository;
+  }
+
+  public SeasonService getSeasonService() {
+    return seasonService;
+  }
+
+  public PointsService getPointsService() {
+    return pointsService;
+  }
+
+  public AdvancementService getAdvancementService() {
+    return advancementService;
+  }
+
+  public VerificationService getVerificationService() {
+    return verificationService;
+  }
+
+  public DiscoveryService getDiscoveryService() {
+    return discoveryService;
+  }
+
+  public PvpService getPvpService() {
+    return pvpService;
+  }
+
+  public SurvivalService getSurvivalService() {
+    return survivalService;
   }
 }

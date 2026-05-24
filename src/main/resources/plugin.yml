@@ -1,5 +1,5 @@
 name: BWD-SeasonPoints
-version: "0.1.1"
+version: "0.1.2"
 main: dev.bwd.seasonpoints.SeasonPointsPlugin
 api-version: '1.21'
 author: VA80

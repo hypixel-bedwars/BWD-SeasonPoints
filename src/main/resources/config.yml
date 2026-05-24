@@ -12,3 +12,10 @@ discord:
 
 season:
   current-season: 1
+
+points:
+  advancements:
+     Legendary: 100
+     Grindy: 100
+     Secret: 100
+     Rare: 100

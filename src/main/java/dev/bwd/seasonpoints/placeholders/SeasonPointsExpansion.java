@@ -52,11 +52,7 @@ public class SeasonPointsExpansion extends PlaceholderExpansion {
     }
 
     if (params.equalsIgnoreCase("season_points")) {
-      int currentSeason = plugin.getConfig().getInt("season.current-season");
-      int points = pointsService.getSeasonPoints(
-        currentSeason,
-        player.getUniqueId()
-      );
+      int points = pointsService.getCachedSeasonPoints(player.getUniqueId());
 
       return String.valueOf(points);
     }

@@ -4,14 +4,15 @@ import dev.bwd.seasonpoints.database.repositories.PlayerRepository;
 import dev.bwd.seasonpoints.services.PointsService;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
-import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.event.player.PlayerQuitEvent;
 
-public class PlayerConnectionListener implements Listener {
+public class PlayerDisconnectListener implements Listener {
 
   private final PlayerRepository playerRepository;
+
   private final PointsService pointsService;
 
-  public PlayerConnectionListener(
+  public PlayerDisconnectListener(
     PlayerRepository playerRepository,
     PointsService pointsService
   ) {
@@ -20,17 +21,8 @@ public class PlayerConnectionListener implements Listener {
   }
 
   @EventHandler
-  public void onJoin(PlayerJoinEvent event) {
-    playerRepository.createPlayerIfNotExists(
-      event.getPlayer().getUniqueId(),
-      event.getPlayer().getName()
-    );
-
-    int currentSeason = 1;
-
-    pointsService.loadPlayerCache(
-      currentSeason,
-      event.getPlayer().getUniqueId()
-    );
+  public void onQuit(PlayerQuitEvent event) {
+    playerRepository.updateLastSeen(event.getPlayer().getUniqueId());
+    pointsService.unloadPlayerCache(event.getPlayer().getUniqueId());
   }
 }

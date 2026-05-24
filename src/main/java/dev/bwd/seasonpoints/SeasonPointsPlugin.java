@@ -12,6 +12,7 @@ import dev.bwd.seasonpoints.integrations.discord.DiscordVerificationClient;
 import dev.bwd.seasonpoints.listeners.AdvancementListener;
 import dev.bwd.seasonpoints.listeners.DiscoveryListener;
 import dev.bwd.seasonpoints.listeners.PlayerConnectionListener;
+import dev.bwd.seasonpoints.listeners.PlayerDisconnectListener;
 import dev.bwd.seasonpoints.listeners.PvPListener;
 import dev.bwd.seasonpoints.listeners.SurvivalListener;
 import dev.bwd.seasonpoints.listeners.VerificationListener;
@@ -97,7 +98,8 @@ public class SeasonPointsPlugin extends JavaPlugin {
     registerListeners(
       advancementService,
       playerRepository,
-      verificationService
+      verificationService,
+      pointsService
     );
 
     getLogger().info("BWD-SeasonPoints enabled!");
@@ -117,12 +119,13 @@ public class SeasonPointsPlugin extends JavaPlugin {
   private void registerListeners(
     AdvancementService advancementService,
     PlayerRepository playerRepository,
-    VerificationService verificationService
+    VerificationService verificationService,
+    PointsService pointsService
   ) {
     PluginManager pm = getServer().getPluginManager();
 
     pm.registerEvents(new AdvancementListener(advancementService), this);
-    pm.registerEvents(new PlayerConnectionListener(playerRepository), this);
+    pm.registerEvents(new PlayerConnectionListener(playerRepository, pointsService), this);
     pm.registerEvents(
       new VerificationListener(this, verificationService),
       this
@@ -130,6 +133,10 @@ public class SeasonPointsPlugin extends JavaPlugin {
     pm.registerEvents(new SurvivalListener(), this);
     pm.registerEvents(new PvPListener(), this);
     pm.registerEvents(new DiscoveryListener(), this);
+    pm.registerEvents(
+      new PlayerDisconnectListener(playerRepository, pointsService),
+      this
+    );
   }
 
   // --- Getters ---

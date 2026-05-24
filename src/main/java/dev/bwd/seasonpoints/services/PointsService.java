@@ -18,6 +18,14 @@ public class PointsService {
     this.seasonPointsRepository = seasonPointsRepository;
   }
 
+  public int getSeasonPoints(int seasonId, UUID playerUuid) {
+    return seasonPointsRepository.getSeasonPoints(seasonId, playerUuid);
+  }
+
+  public int getLifetimePoints(UUID playerUuid) {
+    return seasonPointsRepository.getLifetimePoints(playerUuid);
+  }
+
   /**
    * Awards points to a player safely on an asynchronous thread.
    */

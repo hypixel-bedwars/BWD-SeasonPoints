@@ -64,4 +64,67 @@ public class PointsRepository {
       );
     }
   }
+
+  public int getSeasonPoints(int seasonId, UUID playerUuid) {
+    String sql = """
+          SELECT points
+          FROM season_points
+          WHERE season_id = ?
+          AND player_uuid = ?
+      """;
+
+    try (
+      Connection connection = databaseManager.getConnection();
+      PreparedStatement statement = connection.prepareStatement(sql)
+    ) {
+      statement.setInt(1, seasonId);
+
+      statement.setObject(2, playerUuid);
+
+      var resultSet = statement.executeQuery();
+
+      if (resultSet.next()) {
+        return resultSet.getInt("points");
+      }
+    } catch (SQLException exception) {
+      Bukkit.getLogger().severe(
+        "[SeasonPoints] Failed to fetch season points for " +
+          playerUuid +
+          ": " +
+          exception.getMessage()
+      );
+    }
+
+    return 0;
+  }
+
+  public int getLifetimePoints(UUID playerUuid) {
+    String sql = """
+          SELECT total_points
+          FROM players
+          WHERE uuid = ?
+      """;
+
+    try (
+      Connection connection = databaseManager.getConnection();
+      PreparedStatement statement = connection.prepareStatement(sql)
+    ) {
+      statement.setObject(1, playerUuid);
+
+      var resultSet = statement.executeQuery();
+
+      if (resultSet.next()) {
+        return resultSet.getInt("total_points");
+      }
+    } catch (SQLException exception) {
+      Bukkit.getLogger().severe(
+        "[SeasonPoints] Failed to fetch lifetime points for " +
+          playerUuid +
+          ": " +
+          exception.getMessage()
+      );
+    }
+
+    return 0;
+  }
 }

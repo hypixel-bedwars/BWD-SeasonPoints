@@ -4,3 +4,5 @@ main: dev.bwd.seasonpoints.SeasonPointsPlugin
 api-version: '1.21'
 author: VA80
 description: Seasonal progression and points system for BWD SMP
+softdepend:
+  - PlaceholderAPI

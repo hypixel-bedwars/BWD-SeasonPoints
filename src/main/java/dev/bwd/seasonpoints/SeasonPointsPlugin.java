@@ -15,6 +15,7 @@ import dev.bwd.seasonpoints.listeners.PlayerConnectionListener;
 import dev.bwd.seasonpoints.listeners.PvPListener;
 import dev.bwd.seasonpoints.listeners.SurvivalListener;
 import dev.bwd.seasonpoints.listeners.VerificationListener;
+import dev.bwd.seasonpoints.placeholders.SeasonPointsExpansion;
 import dev.bwd.seasonpoints.services.AdvancementService;
 import dev.bwd.seasonpoints.services.PointsService;
 import dev.bwd.seasonpoints.services.SeasonService;
@@ -36,7 +37,7 @@ public class SeasonPointsPlugin extends JavaPlugin {
     // =========================================
     saveDefaultConfig();
     this.messageManager = new MessageManager(this);
-    
+
     this.databaseManager = new DatabaseManager(this);
     this.databaseManager.connect();
 
@@ -49,8 +50,12 @@ public class SeasonPointsPlugin extends JavaPlugin {
     SeasonRepository seasonRepository = new SeasonRepository(databaseManager);
     PointsRepository pointsRepository = new PointsRepository(databaseManager); // Added
     PlayerRepository playerRepository = new PlayerRepository(databaseManager);
-    AdvancementRepository advancementRepository = new AdvancementRepository(databaseManager);
-    VerificationRepository verificationRepository = new VerificationRepository(databaseManager);
+    AdvancementRepository advancementRepository = new AdvancementRepository(
+      databaseManager
+    );
+    VerificationRepository verificationRepository = new VerificationRepository(
+      databaseManager
+    );
 
     // =========================================
     // 3. SERVICES (Business Logic)
@@ -62,15 +67,38 @@ public class SeasonPointsPlugin extends JavaPlugin {
 
     this.discordService = new DiscordService(this);
     this.discordService.initializeDiscordService();
-    DiscordVerificationClient discordClient = new DiscordVerificationClient(this, discordService);
+    DiscordVerificationClient discordClient = new DiscordVerificationClient(
+      this,
+      discordService
+    );
 
-    AdvancementService advancementService = new AdvancementService(this, advancementRepository, pointsService); // Fixed
-    VerificationService verificationService = new VerificationService(verificationRepository, discordClient);
+    AdvancementService advancementService = new AdvancementService(
+      this,
+      advancementRepository,
+      pointsService
+    ); // Fixed
+    VerificationService verificationService = new VerificationService(
+      verificationRepository,
+      discordClient
+    );
 
     // =========================================
     // 4. LISTENERS (Events)
     // =========================================
-    registerListeners(advancementService, playerRepository, verificationService);
+    if (getServer().getPluginManager().getPlugin("PlaceholderAPI") != null) {
+      new SeasonPointsExpansion(this, pointsService).register();
+
+      getLogger().info("Registered PlaceholderAPI expansion!");
+    }
+
+    // =========================================
+    // 5. LISTENERS (Events)
+    // =========================================
+    registerListeners(
+      advancementService,
+      playerRepository,
+      verificationService
+    );
 
     getLogger().info("BWD-SeasonPoints enabled!");
   }
@@ -87,15 +115,18 @@ public class SeasonPointsPlugin extends JavaPlugin {
    * Helper method to keep onEnable clean by grouping all listener registrations.
    */
   private void registerListeners(
-    AdvancementService advancementService, 
-    PlayerRepository playerRepository, 
+    AdvancementService advancementService,
+    PlayerRepository playerRepository,
     VerificationService verificationService
   ) {
     PluginManager pm = getServer().getPluginManager();
-    
+
     pm.registerEvents(new AdvancementListener(advancementService), this);
     pm.registerEvents(new PlayerConnectionListener(playerRepository), this);
-    pm.registerEvents(new VerificationListener(this, verificationService), this);
+    pm.registerEvents(
+      new VerificationListener(this, verificationService),
+      this
+    );
     pm.registerEvents(new SurvivalListener(), this);
     pm.registerEvents(new PvPListener(), this);
     pm.registerEvents(new DiscoveryListener(), this);

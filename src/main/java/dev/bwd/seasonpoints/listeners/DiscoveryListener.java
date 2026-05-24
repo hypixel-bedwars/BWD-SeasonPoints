@@ -1,5 +1,6 @@
 package dev.bwd.seasonpoints.listeners;
 
+import dev.bwd.seasonpoints.services.DiscoveryService;
 import java.util.HashSet;
 import java.util.Set;
 import net.kyori.adventure.key.Key;
@@ -14,6 +15,12 @@ import org.bukkit.generator.structure.GeneratedStructure;
 import org.bukkit.util.BoundingBox;
 
 public class DiscoveryListener implements Listener {
+
+  private final DiscoveryService discoveryService;
+
+  public DiscoveryListener(DiscoveryService discoveryService) {
+    this.discoveryService = discoveryService;
+  }
 
   @EventHandler
   public void onMove(PlayerMoveEvent event) {
@@ -43,7 +50,8 @@ public class DiscoveryListener implements Listener {
       return;
     }
 
-    player.sendMessage("Discovered biome: " + toBiome.name());
+    // Pass the logic off to our service
+    discoveryService.handleBiomeDiscovery(player, toBiome);
   }
 
   private void checkStructureDiscovery(Player player) {
@@ -101,6 +109,6 @@ public class DiscoveryListener implements Listener {
 
   @Override
   public String toString() {
-	return "DiscoveryListener []";
+    return "DiscoveryListener []";
   }
 }

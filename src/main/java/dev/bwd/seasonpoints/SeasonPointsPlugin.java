@@ -2,6 +2,7 @@ package dev.bwd.seasonpoints;
 
 import dev.bwd.seasonpoints.database.connection.DatabaseManager;
 import dev.bwd.seasonpoints.database.repositories.AdvancementRepository;
+import dev.bwd.seasonpoints.database.repositories.DiscoveryRepository;
 import dev.bwd.seasonpoints.database.repositories.PlayerRepository;
 import dev.bwd.seasonpoints.database.repositories.PointsRepository;
 import dev.bwd.seasonpoints.database.repositories.SeasonRepository;
@@ -18,6 +19,7 @@ import dev.bwd.seasonpoints.listeners.SurvivalListener;
 import dev.bwd.seasonpoints.listeners.VerificationListener;
 import dev.bwd.seasonpoints.placeholders.SeasonPointsExpansion;
 import dev.bwd.seasonpoints.services.AdvancementService;
+import dev.bwd.seasonpoints.services.DiscoveryService;
 import dev.bwd.seasonpoints.services.PointsService;
 import dev.bwd.seasonpoints.services.SeasonService;
 import dev.bwd.seasonpoints.services.VerificationService;
@@ -49,12 +51,15 @@ public class SeasonPointsPlugin extends JavaPlugin {
     // 2. REPOSITORIES (Data Access)
     // =========================================
     SeasonRepository seasonRepository = new SeasonRepository(databaseManager);
-    PointsRepository pointsRepository = new PointsRepository(databaseManager); // Added
+    PointsRepository pointsRepository = new PointsRepository(databaseManager);
     PlayerRepository playerRepository = new PlayerRepository(databaseManager);
     AdvancementRepository advancementRepository = new AdvancementRepository(
       databaseManager
     );
     VerificationRepository verificationRepository = new VerificationRepository(
+      databaseManager
+    );
+    DiscoveryRepository discoveryRepository = new DiscoveryRepository(
       databaseManager
     );
 
@@ -64,7 +69,7 @@ public class SeasonPointsPlugin extends JavaPlugin {
     SeasonService seasonService = new SeasonService(this, seasonRepository);
     seasonService.ensureCurrentSeasonExists();
 
-    PointsService pointsService = new PointsService(this, pointsRepository); // Added
+    PointsService pointsService = new PointsService(this, pointsRepository);
 
     this.discordService = new DiscordService(this);
     this.discordService.initializeDiscordService();
@@ -77,10 +82,16 @@ public class SeasonPointsPlugin extends JavaPlugin {
       this,
       advancementRepository,
       pointsService
-    ); // Fixed
+    );
     VerificationService verificationService = new VerificationService(
       verificationRepository,
       discordClient
+    );
+
+    DiscoveryService discoveryService = new DiscoveryService(
+      this,
+      discoveryRepository,
+      pointsService
     );
 
     // =========================================
@@ -99,7 +110,8 @@ public class SeasonPointsPlugin extends JavaPlugin {
       advancementService,
       playerRepository,
       verificationService,
-      pointsService
+      pointsService,
+      discoveryService
     );
 
     getLogger().info("BWD-SeasonPoints enabled!");
@@ -120,21 +132,30 @@ public class SeasonPointsPlugin extends JavaPlugin {
     AdvancementService advancementService,
     PlayerRepository playerRepository,
     VerificationService verificationService,
-    PointsService pointsService
+    PointsService pointsService,
+    DiscoveryService discoveryService
   ) {
     PluginManager pm = getServer().getPluginManager();
 
     pm.registerEvents(new AdvancementListener(advancementService), this);
-    pm.registerEvents(new PlayerConnectionListener(playerRepository, pointsService), this);
+    pm.registerEvents(
+      new PlayerConnectionListener(
+        this,
+        playerRepository,
+        pointsService,
+        discoveryService
+      ),
+      this
+    );
     pm.registerEvents(
       new VerificationListener(this, verificationService),
       this
     );
     pm.registerEvents(new SurvivalListener(), this);
     pm.registerEvents(new PvPListener(), this);
-    pm.registerEvents(new DiscoveryListener(), this);
+    pm.registerEvents(new DiscoveryListener(discoveryService), this);
     pm.registerEvents(
-      new PlayerDisconnectListener(playerRepository, pointsService),
+      new PlayerDisconnectListener(playerRepository, pointsService, discoveryService),
       this
     );
   }

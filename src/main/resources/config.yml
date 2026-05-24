@@ -19,3 +19,6 @@ points:
      Grindy: 100
      Secret: 100
      Rare: 100
+  discoveries:
+    common-biome: 10
+    rare-biome: 50    

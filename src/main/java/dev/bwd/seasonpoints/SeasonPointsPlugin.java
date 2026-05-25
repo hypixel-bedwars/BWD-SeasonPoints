@@ -1,5 +1,6 @@
 package dev.bwd.seasonpoints;
 
+import dev.bwd.seasonpoints.commands.TransferCommand;
 import dev.bwd.seasonpoints.database.connection.DatabaseManager;
 import dev.bwd.seasonpoints.database.repositories.AdvancementRepository;
 import dev.bwd.seasonpoints.database.repositories.DiscoveryRepository;
@@ -11,6 +12,7 @@ import dev.bwd.seasonpoints.database.repositories.SurvivalRepository;
 import dev.bwd.seasonpoints.database.repositories.TransactionRepository;
 import dev.bwd.seasonpoints.database.repositories.VerificationRepository;
 import dev.bwd.seasonpoints.database.schema.SchemaManager;
+import dev.bwd.seasonpoints.gui.core.GUIListener;
 import dev.bwd.seasonpoints.integrations.discord.DiscordService;
 import dev.bwd.seasonpoints.integrations.discord.DiscordVerificationClient;
 import dev.bwd.seasonpoints.listeners.AdvancementListener;
@@ -88,7 +90,11 @@ public class SeasonPointsPlugin extends JavaPlugin {
     this.seasonService = new SeasonService(this, seasonRepository);
     this.seasonService.ensureCurrentSeasonExists();
 
-    this.pointsService = new PointsService(this, pointsRepository, transactionRepository);
+    this.pointsService = new PointsService(
+      this,
+      pointsRepository,
+      transactionRepository
+    );
 
     this.discordService = new DiscordService(this);
     this.discordService.initializeDiscordService();
@@ -134,7 +140,17 @@ public class SeasonPointsPlugin extends JavaPlugin {
     }
 
     // =========================================
-    // 5. LISTENERS (Events)
+    // 5. COMMANDS
+    // =========================================
+    getCommand("transfer").setExecutor(
+      new TransferCommand(
+        pointsService,
+        seasonService.getCurrentSeasonId()
+      )
+    );
+
+    // =========================================
+    // 6. LISTENERS (Events)
     // =========================================
     registerListeners(
       advancementService,
@@ -196,6 +212,7 @@ public class SeasonPointsPlugin extends JavaPlugin {
       ),
       this
     );
+    pm.registerEvents(new GUIListener(), this);
   }
 
   // --- Getters ---

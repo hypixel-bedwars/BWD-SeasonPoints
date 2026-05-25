@@ -69,6 +69,73 @@ public class PointsRepository {
     }
   }
 
+  public boolean removePoints(int seasonId, UUID playerUuid, int points) {
+    String updateSeasonSql = """
+          UPDATE season_points
+          SET points = points - ?
+          WHERE season_id = ?
+          AND player_uuid = ?
+          AND points >= ?
+      """;
+
+    String updateLifetimeSql = """
+          UPDATE players
+          SET total_points = total_points - ?
+          WHERE uuid = ?
+          AND total_points >= ?
+      """;
+
+    try (Connection conn = databaseManager.getConnection()) {
+      boolean originalAutoCommit = conn.getAutoCommit();
+      conn.setAutoCommit(false);
+
+      try (
+        PreparedStatement psSeason = conn.prepareStatement(updateSeasonSql);
+        PreparedStatement psLifetime = conn.prepareStatement(updateLifetimeSql)
+      ) {
+        psSeason.setInt(1, points);
+        psSeason.setInt(2, seasonId);
+        psSeason.setObject(3, playerUuid);
+        psSeason.setInt(4, points);
+        int seasonalUpdated = psSeason.executeUpdate();
+
+        psLifetime.setInt(1, points);
+        psLifetime.setObject(2, playerUuid);
+        psLifetime.setInt(3, points);
+        int lifetimeUpdated = psLifetime.executeUpdate();
+
+        /*
+         * Prevent negatives
+         */
+
+        if (seasonalUpdated == 0 || lifetimeUpdated == 0) {
+          conn.rollback();
+
+          return false;
+        }
+
+        conn.commit();
+
+        return true;
+      } catch (SQLException exception) {
+        conn.rollback();
+
+        throw exception;
+      } finally {
+        conn.setAutoCommit(originalAutoCommit);
+      }
+    } catch (SQLException exception) {
+      Bukkit.getLogger().severe(
+        "[SeasonPoints] Failed to remove points from " +
+          playerUuid +
+          ": " +
+          exception.getMessage()
+      );
+    }
+
+    return false;
+  }
+
   public int getSeasonPoints(int seasonId, UUID playerUuid) {
     String sql = """
           SELECT points
@@ -161,7 +228,8 @@ public class PointsRepository {
       }
     } catch (SQLException exception) {
       Bukkit.getLogger().severe(
-        "[SeasonPoints] Failed to count active players: " + exception.getMessage()
+        "[SeasonPoints] Failed to count active players: " +
+          exception.getMessage()
       );
     }
 

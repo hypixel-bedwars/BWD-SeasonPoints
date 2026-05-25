@@ -3,7 +3,6 @@ package dev.bwd.seasonpoints.database.repositories;
 import dev.bwd.seasonpoints.database.connection.DatabaseManager;
 import dev.bwd.seasonpoints.models.DiscoveredBiome;
 import dev.bwd.seasonpoints.models.DiscoveredStructure;
-
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -92,7 +91,7 @@ public class DiscoveryRepository {
     List<DiscoveredBiome> discoveries = new ArrayList<>();
 
     String sql = """
-          SELECT biome_key
+          SELECT *
           FROM biome_discoveries
           WHERE season_id = ?
           AND player_uuid = ?

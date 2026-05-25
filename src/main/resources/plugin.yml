@@ -6,3 +6,7 @@ author: VA80
 description: Seasonal progression and points system for BWD SMP
 softdepend:
   - PlaceholderAPI
+commands:
+  transfer:
+    description: Transfer points to another player
+    usage: /transfer <player>

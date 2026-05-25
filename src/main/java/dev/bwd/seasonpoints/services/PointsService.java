@@ -101,4 +101,119 @@ public class PointsService {
       );
     });
   }
+
+  public boolean hasEnoughPoints(UUID playerUuid, int amount) {
+    return getCachedSeasonPoints(playerUuid) >= amount;
+  }
+
+  public void removePointsAsync(
+    int seasonId,
+    UUID playerUuid,
+    int points,
+    TransactionType transactionType
+  ) {
+    cachedSeasonPoints.computeIfPresent(playerUuid, (uuid, current) ->
+      Math.max(0, current - points)
+    );
+
+    Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
+      boolean success = seasonPointsRepository.removePoints(
+        seasonId,
+        playerUuid,
+        points
+      );
+
+      if (!success) {
+        plugin
+          .getLogger()
+          .warning(
+            "[PointsService] Failed to remove points from " + playerUuid
+          );
+
+        return;
+      }
+
+      transactionRepository.createTransaction(
+        seasonId,
+        playerUuid,
+        playerUuid,
+        points,
+        transactionType
+      );
+    });
+  }
+
+  public boolean transferPointsAsync(
+    int seasonId,
+    UUID senderUuid,
+    UUID receiverUuid,
+    int amount
+  ) {
+    if (amount <= 0) {
+      return false;
+    }
+
+    if (senderUuid.equals(receiverUuid)) {
+      return false;
+    }
+
+    if (!hasEnoughPoints(senderUuid, amount)) {
+      return false;
+    }
+
+    cachedSeasonPoints.computeIfPresent(
+      senderUuid,
+      (uuid, current) -> current - amount
+    );
+
+    cachedSeasonPoints.merge(receiverUuid, amount, Integer::sum);
+
+    boolean removed = seasonPointsRepository.removePoints(
+      seasonId,
+      senderUuid,
+      amount
+    );
+
+    if (!removed) {
+      /*
+       * rollback cache
+       */
+
+      cachedSeasonPoints.merge(senderUuid, amount, Integer::sum);
+
+      cachedSeasonPoints.computeIfPresent(receiverUuid, (uuid, current) ->
+        Math.max(0, current - amount)
+      );
+
+      plugin
+        .getLogger()
+        .warning("[PointsService] Transfer failed during removal step.");
+
+      return false;
+    }
+
+    seasonPointsRepository.addPoints(seasonId, receiverUuid, amount);
+
+    transactionRepository.createTransaction(
+      seasonId,
+      senderUuid,
+      receiverUuid,
+      amount,
+      TransactionType.PLAYER_TRANSFER
+    );
+
+    plugin
+      .getLogger()
+      .info(
+        "[PointsService] Transfer completed: " +
+          senderUuid +
+          " -> " +
+          receiverUuid +
+          " (" +
+          amount +
+          " points)"
+      );
+
+    return true;
+  }
 }

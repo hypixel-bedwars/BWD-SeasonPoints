@@ -31,6 +31,9 @@ public class SchemaManager {
     executeSchema("database/schema/004_structure_discoveries.sql");
     executeSchema("database/schema/005_advancement_rewards.sql");
     executeSchema("database/schema/006_season_points.sql");
+    executeSchema("database/schema/007_pvp_kills.sql");
+    executeSchema("database/schema/008_survival_stats.sql");
+    executeSchema("database/schema/009_point_transactions.sql");
   }
 
   private void executeSchema(String resourcePath) {

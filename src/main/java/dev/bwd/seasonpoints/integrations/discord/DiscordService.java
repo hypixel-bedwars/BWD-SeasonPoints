@@ -61,7 +61,8 @@ public class DiscordService {
   }
 
   private void registerCommands() {
-    CanvasRenderer renderer = CanvasRenderer.withFallbackFont();
+    CanvasRenderer renderer = CanvasRenderer.withAsciiFont(
+        plugin.getClass().getClassLoader(), plugin.getLogger());
     LeaderboardComponent leaderboardComponent = new LeaderboardComponent(renderer, "default");
 
     register(new ProfileCommand(plugin));

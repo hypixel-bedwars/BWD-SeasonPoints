@@ -11,6 +11,7 @@ import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.util.List;
+import java.util.logging.Logger;
 
 /**
  * Central facade for the Minecraft rendering framework.
@@ -62,13 +63,33 @@ public final class CanvasRenderer {
     }
 
     /**
+     * Creates a renderer loaded with the bundled {@code ascii.png} atlas.
+     * Falls back to the programmatic font if the resource cannot be read.
+     */
+    public static CanvasRenderer withAsciiFont(ClassLoader classLoader) {
+        return withAsciiFont(classLoader, null);
+    }
+
+    public static CanvasRenderer withAsciiFont(ClassLoader classLoader, Logger logger) {
+        MinecraftFont fonts = new MinecraftFont();
+        try {
+            fonts.loadFromClasspath("default", "assets/fonts/ascii.png", classLoader);
+        } catch (IOException e) {
+            if (logger != null) {
+                logger.warning("[Rendering] Failed to load ascii.png atlas, using programmatic fallback: " + e.getMessage());
+            }
+            fonts.registerFontSet(ProgrammaticFontBuilder.buildFallbackFont("default"));
+        }
+        return new CanvasRenderer(fonts);
+    }
+
+    /**
      * Creates a renderer pre-loaded with a programmatic fallback font registered
      * under the name {@code "default"}.  No atlas file required.
      */
     public static CanvasRenderer withFallbackFont() {
         MinecraftFont fonts = new MinecraftFont();
         FontSet fallback = ProgrammaticFontBuilder.buildFallbackFont("default");
-        // Register the built font directly in the registry via a thin wrapper
         fonts.registerFontSet(fallback);
         return new CanvasRenderer(fonts);
     }

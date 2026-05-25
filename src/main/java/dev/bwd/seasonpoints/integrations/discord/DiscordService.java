@@ -7,6 +7,8 @@ import dev.bwd.seasonpoints.integrations.discord.commands.LeaderboardCommand;
 import dev.bwd.seasonpoints.integrations.discord.commands.ProfileCommand;
 import dev.bwd.seasonpoints.integrations.discord.commands.SeasonCommand;
 import dev.bwd.seasonpoints.integrations.discord.events.SlashCommandListener;
+import dev.bwd.seasonpoints.rendering.CanvasRenderer;
+import dev.bwd.seasonpoints.rendering.components.LeaderboardComponent;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -59,8 +61,11 @@ public class DiscordService {
   }
 
   private void registerCommands() {
+    CanvasRenderer renderer = CanvasRenderer.withFallbackFont();
+    LeaderboardComponent leaderboardComponent = new LeaderboardComponent(renderer, "default");
+
     register(new ProfileCommand(plugin));
-    register(new LeaderboardCommand(plugin));
+    register(new LeaderboardCommand(plugin, leaderboardComponent));
     register(new SeasonCommand(plugin));
     register(new HelpCommand());
   }

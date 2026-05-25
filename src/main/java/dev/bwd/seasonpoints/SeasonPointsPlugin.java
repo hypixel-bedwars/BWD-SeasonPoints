@@ -59,6 +59,9 @@ public class SeasonPointsPlugin extends JavaPlugin {
 
   @Override
   public void onEnable() {
+    // Must be set before any java.awt class is loaded (BufferedImage, Graphics2D, etc.)
+    System.setProperty("java.awt.headless", "true");
+
     // =========================================
     // 1. CORE MANAGERS & CONFIG
     // =========================================

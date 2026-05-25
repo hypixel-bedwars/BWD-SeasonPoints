@@ -3,13 +3,15 @@ package dev.bwd.seasonpoints.integrations.discord.commands;
 import dev.bwd.seasonpoints.SeasonPointsPlugin;
 import dev.bwd.seasonpoints.integrations.discord.utils.DiscordEmbedUtils;
 import dev.bwd.seasonpoints.models.LeaderboardEntry;
+import dev.bwd.seasonpoints.rendering.components.LeaderboardComponent;
+import java.io.IOException;
 import java.util.List;
-import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.interactions.commands.OptionMapping;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.Commands;
 import net.dv8tion.jda.api.interactions.commands.build.SlashCommandData;
+import net.dv8tion.jda.api.utils.FileUpload;
 
 public class LeaderboardCommand implements DiscordCommand {
 
@@ -17,9 +19,11 @@ public class LeaderboardCommand implements DiscordCommand {
   private static final int MAX_LIMIT = 25;
 
   private final SeasonPointsPlugin plugin;
+  private final LeaderboardComponent leaderboardComponent;
 
-  public LeaderboardCommand(SeasonPointsPlugin plugin) {
+  public LeaderboardCommand(SeasonPointsPlugin plugin, LeaderboardComponent leaderboardComponent) {
     this.plugin = plugin;
+    this.leaderboardComponent = leaderboardComponent;
   }
 
   @Override
@@ -64,29 +68,19 @@ public class LeaderboardCommand implements DiscordCommand {
       return;
     }
 
-    StringBuilder body = new StringBuilder();
-    for (int i = 0; i < entries.size(); i++) {
-      LeaderboardEntry entry = entries.get(i);
-      body
-        .append("`")
-        .append(rankBadge(i + 1))
-        .append("`  **")
-        .append(entry.username())
-        .append("** — ")
-        .append(String.format("%,d", entry.points()))
-        .append(" pts\n");
+    String title = "Season " + seasonId + " Leaderboard";
+
+    try {
+      byte[] png = leaderboardComponent.renderBytes(entries, title);
+      event.getHook()
+        .sendFiles(FileUpload.fromData(png, "leaderboard.png"))
+        .queue();
+    } catch (IOException e) {
+      plugin.getLogger().severe("Failed to render leaderboard image: " + e.getMessage());
+      event.getHook()
+        .sendMessageEmbeds(DiscordEmbedUtils.info(title, "Could not render image."))
+        .queue();
     }
-
-    EmbedBuilder embed = DiscordEmbedUtils.base()
-      .setTitle("Season " + seasonId + " Leaderboard")
-      .setDescription(body.toString().trim())
-      .setFooter("BWD Season Points  •  Top " + entries.size());
-
-    event.getHook().sendMessageEmbeds(embed.build()).queue();
-  }
-
-  private static String rankBadge(int rank) {
-    return String.format("%2d", rank);
   }
 
   private static int clamp(int value, int min, int max) {

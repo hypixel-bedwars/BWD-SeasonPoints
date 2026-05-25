@@ -4,6 +4,8 @@ import dev.bwd.seasonpoints.SeasonPointsPlugin;
 import dev.bwd.seasonpoints.database.repositories.DiscoveryRepository;
 import dev.bwd.seasonpoints.models.DiscoveredBiome;
 import dev.bwd.seasonpoints.models.DiscoveredStructure;
+import dev.bwd.seasonpoints.models.TransactionType;
+
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
@@ -93,7 +95,7 @@ public class DiscoveryService {
     int seasonId = plugin.getConfig().getInt("season.current-season");
     Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
       discoveryRepository.createBiomeDiscovery(seasonId, uuid, biomeKey);
-      pointsService.awardPointsAsync(seasonId, uuid, pointsToAward);
+      pointsService.awardPointsAsync(seasonId, uuid, pointsToAward, TransactionType.DISCOVERY_REWARD);
     });
   }
 
@@ -116,7 +118,7 @@ public class DiscoveryService {
         uuid,
         structureKey
       );
-      pointsService.awardPointsAsync(seasonId, uuid, pointsToAward);
+      pointsService.awardPointsAsync(seasonId, uuid, pointsToAward, TransactionType.DISCOVERY_REWARD);
     });
   }
 }

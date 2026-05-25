@@ -2,6 +2,8 @@ package dev.bwd.seasonpoints.services;
 
 import dev.bwd.seasonpoints.SeasonPointsPlugin;
 import dev.bwd.seasonpoints.database.repositories.SurvivalRepository;
+import dev.bwd.seasonpoints.models.TransactionType;
+
 import java.util.Set;
 import java.util.UUID;
 import org.bukkit.Bukkit;
@@ -63,7 +65,7 @@ public class SurvivalService {
         return;
       }
 
-      pointsService.awardPointsAsync(currentSeason, uuid, reward);
+      pointsService.awardPointsAsync(currentSeason, uuid, reward, TransactionType.SURVIVAL_REWARD);
     });
   }
 
@@ -87,7 +89,7 @@ public class SurvivalService {
         return;
       }
 
-      pointsService.awardPointsAsync(currentSeason, uuid, reward);
+      pointsService.awardPointsAsync(currentSeason, uuid, reward, TransactionType.SURVIVAL_REWARD);
     });
   }
 
@@ -111,7 +113,7 @@ public class SurvivalService {
         return;
       }
 
-      pointsService.awardPointsAsync(currentSeason, uuid, reward);
+      pointsService.awardPointsAsync(currentSeason, uuid, reward, TransactionType.SURVIVAL_REWARD);
     });
   }
 

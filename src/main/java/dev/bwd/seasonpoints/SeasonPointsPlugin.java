@@ -8,6 +8,7 @@ import dev.bwd.seasonpoints.database.repositories.PointsRepository;
 import dev.bwd.seasonpoints.database.repositories.PvpRepository;
 import dev.bwd.seasonpoints.database.repositories.SeasonRepository;
 import dev.bwd.seasonpoints.database.repositories.SurvivalRepository;
+import dev.bwd.seasonpoints.database.repositories.TransactionRepository;
 import dev.bwd.seasonpoints.database.repositories.VerificationRepository;
 import dev.bwd.seasonpoints.database.schema.SchemaManager;
 import dev.bwd.seasonpoints.integrations.discord.DiscordService;
@@ -44,6 +45,7 @@ public class SeasonPointsPlugin extends JavaPlugin {
   private DiscoveryRepository discoveryRepository;
   private PvpRepository pvpRepository;
   private SurvivalRepository survivalRepository;
+  private TransactionRepository transactionRepository;
 
   private SeasonService seasonService;
   private PointsService pointsService;
@@ -78,15 +80,15 @@ public class SeasonPointsPlugin extends JavaPlugin {
     this.discoveryRepository = new DiscoveryRepository(databaseManager);
     this.pvpRepository = new PvpRepository(databaseManager);
     this.survivalRepository = new SurvivalRepository(databaseManager);
-
+    this.transactionRepository = new TransactionRepository(databaseManager);
+    
     // =========================================
     // 3. SERVICES (Business Logic)
-    // FIXED: Assigned to class fields instead of local variables
     // =========================================
     this.seasonService = new SeasonService(this, seasonRepository);
     this.seasonService.ensureCurrentSeasonExists();
 
-    this.pointsService = new PointsService(this, pointsRepository);
+    this.pointsService = new PointsService(this, pointsRepository, transactionRepository);
 
     this.discordService = new DiscordService(this);
     this.discordService.initializeDiscordService();

@@ -3,6 +3,8 @@ package dev.bwd.seasonpoints.services;
 import dev.bwd.seasonpoints.SeasonPointsPlugin;
 import dev.bwd.seasonpoints.database.repositories.AdvancementRepository;
 import dev.bwd.seasonpoints.models.AdvancementTier;
+import dev.bwd.seasonpoints.models.TransactionType;
+
 import java.util.UUID;
 
 public class AdvancementService {
@@ -46,7 +48,7 @@ public class AdvancementService {
 
     int points = getPointsForTier(tier);
 
-    pointsService.awardPointsAsync(currentSeason, playerUuid, points);
+    pointsService.awardPointsAsync(currentSeason, playerUuid, points, TransactionType.ADVANCEMENT_REWARD);
   }
 
   private int getPointsForTier(AdvancementTier tier) {

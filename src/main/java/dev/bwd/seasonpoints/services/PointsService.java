@@ -2,6 +2,8 @@ package dev.bwd.seasonpoints.services;
 
 import dev.bwd.seasonpoints.SeasonPointsPlugin;
 import dev.bwd.seasonpoints.database.repositories.PointsRepository;
+import dev.bwd.seasonpoints.database.repositories.TransactionRepository;
+import dev.bwd.seasonpoints.models.TransactionType;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
@@ -11,16 +13,18 @@ public class PointsService {
 
   private final SeasonPointsPlugin plugin;
   private final PointsRepository seasonPointsRepository;
+  private final TransactionRepository transactionRepository;
   private final Map<UUID, Integer> cachedSeasonPoints =
     new ConcurrentHashMap<>();
 
   public PointsService(
     SeasonPointsPlugin plugin,
-    PointsRepository seasonPointsRepository
+    PointsRepository seasonPointsRepository,
+    TransactionRepository transactionRepository
   ) {
     this.plugin = plugin;
-
     this.seasonPointsRepository = seasonPointsRepository;
+    this.transactionRepository = transactionRepository;
   }
 
   public int getSeasonPoints(int seasonId, UUID playerUuid) {
@@ -81,12 +85,20 @@ public class PointsService {
   public final void awardPointsAsync(
     int seasonId,
     UUID playerUuid,
-    int points
+    int points,
+    TransactionType transactionType
   ) {
     cachedSeasonPoints.merge(playerUuid, points, Integer::sum);
 
     Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
       seasonPointsRepository.addPoints(seasonId, playerUuid, points);
+      transactionRepository.createTransaction(
+        seasonId,
+        null,
+        playerUuid,
+        points,
+        transactionType
+      );
     });
   }
 }

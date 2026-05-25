@@ -2,6 +2,8 @@ package dev.bwd.seasonpoints.services;
 
 import dev.bwd.seasonpoints.SeasonPointsPlugin;
 import dev.bwd.seasonpoints.database.repositories.PvpRepository;
+import dev.bwd.seasonpoints.models.TransactionType;
+
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
@@ -63,7 +65,8 @@ public class PvpService {
         pointsService.awardPointsAsync(
           currentSeasonId,
           killerUuid,
-          pointsForPvp
+          pointsForPvp,
+          TransactionType.PVP_REWARD
         );
       }
     });

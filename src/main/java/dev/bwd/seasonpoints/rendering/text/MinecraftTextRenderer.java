@@ -4,7 +4,6 @@ import dev.bwd.seasonpoints.rendering.models.BitmapGlyph;
 import dev.bwd.seasonpoints.rendering.models.FontSet;
 import dev.bwd.seasonpoints.rendering.models.StyledSegment;
 import dev.bwd.seasonpoints.rendering.models.TextStyle;
-import dev.bwd.seasonpoints.rendering.utils.RenderUtils;
 
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;

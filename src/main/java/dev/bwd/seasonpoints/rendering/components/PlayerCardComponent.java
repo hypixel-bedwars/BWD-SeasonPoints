@@ -53,7 +53,6 @@ public final class PlayerCardComponent {
 
     // ---- Palette -------------------------------------------------------------
     private static final Color BG        = new Color(0, 0, 0, 160);
-    private static final Color BG_BORDER = new Color(80, 80, 80, 140);
 
     private final CanvasRenderer renderer;
     private final String fontName;

@@ -35,3 +35,10 @@ points:
       base-points: 5
     villager-trading:
       base-points: 3
+
+spawn:
+  world: world
+  center:
+    x: 0
+    z: 0
+  radius: 500

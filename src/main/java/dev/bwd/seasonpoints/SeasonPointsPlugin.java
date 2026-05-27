@@ -25,6 +25,7 @@ import dev.bwd.seasonpoints.listeners.VerificationListener;
 import dev.bwd.seasonpoints.placeholders.SeasonPointsExpansion;
 import dev.bwd.seasonpoints.services.AdvancementService;
 import dev.bwd.seasonpoints.services.DiscoveryService;
+import dev.bwd.seasonpoints.services.LocationService;
 import dev.bwd.seasonpoints.services.PointsService;
 import dev.bwd.seasonpoints.services.PvpService;
 import dev.bwd.seasonpoints.services.SeasonService;
@@ -56,6 +57,7 @@ public class SeasonPointsPlugin extends JavaPlugin {
   private DiscoveryService discoveryService;
   private PvpService pvpService;
   private SurvivalService survivalService;
+  private LocationService locationService;
 
   @Override
   public void onEnable() {
@@ -86,7 +88,7 @@ public class SeasonPointsPlugin extends JavaPlugin {
     this.pvpRepository = new PvpRepository(databaseManager);
     this.survivalRepository = new SurvivalRepository(databaseManager);
     this.transactionRepository = new TransactionRepository(databaseManager);
-    
+
     // =========================================
     // 3. SERVICES (Business Logic)
     // =========================================
@@ -133,6 +135,7 @@ public class SeasonPointsPlugin extends JavaPlugin {
       pointsService,
       seasonService
     );
+    this.locationService = new LocationService(this);
 
     // =========================================
     // 4. PLACEHOLDERS / INTEGRATIONS
@@ -146,10 +149,7 @@ public class SeasonPointsPlugin extends JavaPlugin {
     // 5. COMMANDS
     // =========================================
     getCommand("transfer").setExecutor(
-      new TransferCommand(
-        pointsService,
-        seasonService.getCurrentSeasonId()
-      )
+      new TransferCommand(pointsService, seasonService.getCurrentSeasonId())
     );
 
     // =========================================
@@ -162,7 +162,8 @@ public class SeasonPointsPlugin extends JavaPlugin {
       pointsService,
       discoveryService,
       pvpService,
-      survivalService
+      survivalService,
+      locationService
     );
 
     getLogger().info("BWD-SeasonPoints enabled!");
@@ -186,7 +187,8 @@ public class SeasonPointsPlugin extends JavaPlugin {
     PointsService pointsService,
     DiscoveryService discoveryService,
     PvpService pvpService,
-    SurvivalService survivalService
+    SurvivalService survivalService,
+    LocationService locationService
   ) {
     PluginManager pm = getServer().getPluginManager();
 
@@ -196,7 +198,8 @@ public class SeasonPointsPlugin extends JavaPlugin {
         this,
         playerRepository,
         pointsService,
-        discoveryService
+        discoveryService,
+        locationService
       ),
       this
     );
@@ -290,5 +293,9 @@ public class SeasonPointsPlugin extends JavaPlugin {
 
   public SurvivalService getSurvivalService() {
     return survivalService;
+  }
+
+  public LocationService getLocationService() {
+    return locationService;
   }
 }
